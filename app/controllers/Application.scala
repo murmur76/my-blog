@@ -62,6 +62,7 @@ object Application extends Controller {
   def post = Action { implicit request =>
     val postData: Map[String, String] = postForm.bindFromRequest.data
     val frontPost = Post(counter, postData("title"), postData("content"), new Date)
+    val front = (frontPost, frontUser, frontComments)
     allposts = front +: allposts
     Redirect(routes.Application.blog)
   }
