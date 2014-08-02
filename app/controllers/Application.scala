@@ -14,26 +14,29 @@ object Application extends Controller {
   val olderComment1 = Comment("who", "what is it", new Date, 2)
   val olderComment2 = Comment("who", "what is it", new Date, 2)
   val olderComments = Seq(olderComment1, olderComment2)
-  val older = Option(olderPost, olderUser, olderComments)
+  val older = (olderPost, olderUser, olderComments)
 
   val frontPost = Post(1, "First Post", "test", new Date)
   val frontUser = User("celica212", "dongju")
   val frontComment1 = Comment("who", "what is it", new Date, 1)
   val frontComment2 = Comment("who", "what is it", new Date, 1)
   val frontComments = Seq(frontComment1, frontComment2)
-  val front: Option[(Post, User, Seq[Comment])] = Option(frontPost, frontUser, frontComments)
+  val front: (Post, User, Seq[Comment]) = (frontPost, frontUser, frontComments)
 
-  val olders: Seq[Option[(Post, User, Seq[Comment])]] = Seq(older, older, older)
-  var allposts: Seq[Option[(Post, User, Seq[Comment])]] = front +: olders
+  val olders: Seq[(Post, User, Seq[Comment])] = Seq(older, older, older)
+  var allposts: Seq[(Post, User, Seq[Comment])] = front +: olders
+  var count: Long = 3
 
+  def counter: Long = {
+    count += 1
+    count
+  }
 
   var postForm = Form(
-    mapping(
-      "id" -> longNumber,
+    tuple(
       "title" -> nonEmptyText,
-      "content" -> nonEmptyText,
-      "postedAt" -> date
-    ) (Post.apply) (Post.unapply)
+      "content" -> nonEmptyText
+    )
   )
 
   def index = Action {
@@ -46,36 +49,29 @@ object Application extends Controller {
   }
 
   def blog = Action {
-    val front: Option[(Post, User, Seq[Comment])] = allposts head
-    val olders: Seq[Option[(Post, User, Seq[Comment])]] = allposts tail
+    val front: Option[(Post, User, Seq[Comment])] = allposts headOption
+    val olders: Seq[(Post, User, Seq[Comment])] = allposts tail
 
     Ok(html.blog_index(front, olders))
   }
 
-  def post = Action {
-    Ok(html.postform(postForm))
+  def writePost = Action {
+    Ok(html.blog_form(postForm))
   }
 
-  def getPost = Action { implicit request =>
-    postForm.bindFromRequest.fold(
-      formWithErrors => BadRequest(html.homepage_index("invalid post")),
-      postData => {
-        val frontUser = User("celica212", "dongju")
-        val frontComment1 = Comment("who", "what is it", new Date, 1)
-        val frontComment2 = Comment("who", "what is it", new Date, 1)
-        val frontComments = Seq(frontComment1, frontComment2)
-        val front: Option[(Post, User, Seq[Comment])] = Option(postData, frontUser, frontComments)
-        val olders: Seq[Option[(Post, User, Seq[Comment])]] = allposts
-        allposts = front +: allposts
-        Ok(html.blog_index(front, olders))
-      }
-    )
+  def post = Action { implicit request =>
+    val postData: Map[String, String] = postForm.bindFromRequest.data
+    val frontPost = Post(counter, postData("title"), postData("content"), new Date)
+    allposts = front +: allposts
+    Redirect(routes.Application.blog)
   }
 
-  def show(id: Long) = {
-    allposts map(
-      (postObject: Option[(Post, User, Seq[Comment])]
-    )=> postObject(0)(0).filter((post : Post) => post.id == id)
-      ).map(post => html.blog_display(post))
+  def showPost(id: Long) = Action {
+    val post = allposts.find(post => post._1.id == id)
+    if(post.isDefined) {
+      Ok(html.show_post(post.get))
+    } else {
+      BadRequest("No Such Post")
+    }
   }
 }

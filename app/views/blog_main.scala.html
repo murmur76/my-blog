@@ -1,4 +1,4 @@
-@(title:String = "")(body: => Html)
+@(title:String)(body: => Html)
 
 <!DOCTYPE html>
 <html>
@@ -15,12 +15,12 @@
             <div id="logo">
                 Blog.<br><br>
             </div> <br><br>
-            <a href="/post">write post</a>
+            <a href="/write">write post</a>
             <br><br>
 
             <div id="title">
                 <span class="about">About this blog</span>
-                <h1><a href="#">@play.api.Play.current.configuration.getString("blog.title")</a></h1>
+                <h1><a href="/blog">@play.api.Play.current.configuration.getString("blog.title")</a></h1>
                 <h2>@play.api.Play.current.configuration.getString("blog.baseline")</h2>
             </div>
         </div>

@@ -1,0 +1,5 @@
+@(post:(models.Post,models.User,Seq[models.Comment]))
+
+@blog_main(post._1.title) {
+    @blog_display(post, mode = "full")
+}

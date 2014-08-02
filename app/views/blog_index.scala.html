@@ -1,15 +1,15 @@
 @(
     front:Option[(models.Post,models.User,Seq[models.Comment])],
-    older:Seq[Option[(models.Post,models.User,Seq[models.Comment])]]
+    older:Seq[(models.Post,models.User,Seq[models.Comment])]
 )
 
-@blog_main(title = "Home") {
+@blog_main(title = "Blog") {
 
 @front.map { front =>
 
     @blog_display(front, mode = "home")
 
-    @older.filterNot(_.isEmpty).map { posts =>
+    @Option(older).filterNot(_.isEmpty).map { posts =>
 
         <div class="older-posts">
         <h3>Older posts <span class="from">from this blog</span></h3>

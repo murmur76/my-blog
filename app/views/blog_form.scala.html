@@ -1,0 +1,9 @@
+@(postForm: Form[(String, String)])
+@import helper._
+@import models.Post
+@main("Write Post") {
+    <form action="/post" method="POST"> Title <br>
+    <input type="text" name="title" size="52"> <br> Body <br>
+    <textarea name="content" rows="10" cols="50"></textarea> <br>
+    <input type="submit" value="Submit">
+}

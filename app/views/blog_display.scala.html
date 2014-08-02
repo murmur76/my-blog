@@ -10,7 +10,7 @@
 
 <div class="post @mode">
     <h2 class="post-title">
-        <a href="#">@post._1.title</a>
+        <a href="/blog/@post._1.id">@post._1.title</a>
     </h2>
     <div class="post-metadata">
         <span class="post-author">by @post._2.fullname</span>,
@@ -25,7 +25,6 @@
     </div>
     @if(mode != "teaser") {
     <div class="post-content">
-        <div class="about">Detail: </div>
         @Html(post._1.content.replace("\n", "<br>"))
     </div>
     }
@@ -47,7 +46,6 @@
                     </span>
         </div>
         <div class="comment-content">
-            <div class="about">Detail: </div>
             @Html(comment.content.replace("\n", "<br>"))
         </div>
     </div>
