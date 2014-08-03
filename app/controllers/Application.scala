@@ -7,6 +7,10 @@ import play.api.data.Forms._
 import java.util.Date
 import models._
 import views._
+import reactivemongo.api._
+import play.modules.reactivemongo.MongoController
+import play.modules.reactivemongo.json.collection.JSONCollection
+
 
 object Application extends Controller {
   val olderPost = Post(2, "Second Post", "test", new Date)
@@ -26,6 +30,23 @@ object Application extends Controller {
   val olders: Seq[(Post, User, Seq[Comment])] = Seq(older, older, older)
   var allposts: Seq[(Post, User, Seq[Comment])] = front +: olders
   var count: Long = 3
+
+  def connect() {
+    import reactivemongo.api._
+    import scala.concurrent.ExecutionContext.Implicits.global
+
+    // gets an instance of the driver
+    // (creates an actor system)
+    val driver = new MongoDriver
+    val connection = driver.connection(List("localhost"))
+
+    // Gets a reference to the database "plugin"
+    val db = connection("plugin")
+
+    // Gets a reference to the collection "acoll"
+    // By default, you get a BSONCollection.
+    val collection = db("acoll")
+  }
 
   def counter: Long = {
     count += 1
