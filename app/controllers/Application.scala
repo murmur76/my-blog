@@ -37,26 +37,11 @@ object Application extends Controller with MongoController {
   val olders: Seq[(Post, User)] = Seq(older, older, older)
   var allposts: Seq[(Post, User)] = front +: olders
   var count: Long = 3
+  var posts = getAllPosts
 
   private def postCollection: JSONCollection = db.collection[JSONCollection]("posts")
   private def commentCollection: JSONCollection = db.collection[JSONCollection]("comments")
 
-  def connect() {
-    import reactivemongo.api._
-    import scala.concurrent.ExecutionContext.Implicits.global
-
-    // gets an instance of the driver
-    // (creates an actor system)
-    val driver = new MongoDriver
-    val connection = driver.connection(List("localhost"))
-
-    // Gets a reference to the database "plugin"
-    val db = connection("plugin")
-
-    // Gets a reference to the collection "acoll"
-    // By default, you get a BSONCollection.
-    val collection = db("acoll")
-  }
 
   def counter: Long = {
     count += 1
@@ -79,13 +64,19 @@ object Application extends Controller with MongoController {
     Ok(html.homepage_index("Homepage"))
   }
 
-  /*
   def getAllPosts = {
     import play.api.libs.concurrent.Execution.Implicits._
+    implicit val Format = Json.format[Comment]
+    implicit val postFormat = Json.format[Post]
+
     val cursor = postCollection.find(Json.obj()).cursor[Post]
-    val result = cursor.collect[List]()
+    val result = cursor.collect[Seq]()
+
+    val alls = result.map {
+      postOne => (User(userID, userName), postOne.head)
+    }
+    alls
   }
-  */
 
   def blog = Action {
     val front: Option[(Post, User)] = allposts headOption
@@ -100,12 +91,12 @@ object Application extends Controller with MongoController {
 
   def post = Action { implicit request =>
     import play.api.libs.concurrent.Execution.Implicits._
+    implicit val Format = Json.format[Comment]
+    implicit val postFormat = Json.format[Post]
+
     val postData: Map[String, String] = postForm.bindFromRequest.data
     val frontPost = Post(counter, postData("title"), postData("content"), new Date, Seq(), "celica212")
 
-    implicit val Format = Json.format[Comment]
-
-    implicit val postFormat = Json.format[Post]
     postCollection.save(Json.toJson(frontPost))
 
     val front = (frontPost, frontUser)
