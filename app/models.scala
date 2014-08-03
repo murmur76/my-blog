@@ -11,7 +11,9 @@ case class Post(
   id: Long,
   title: String,
   content: String,
-  postedAt: Date
+  postedAt: Date,
+  comments: Seq[Comment],
+  author_id: String
 )
 
 case class Comment(

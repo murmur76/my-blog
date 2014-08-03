@@ -1,12 +1,32 @@
-@(post:(models.Post,models.User,Seq[models.Comment]), mode: String = "full")
+@(post:(models.Post,models.User), mode: String = "full")
 
 @commentsTitle = {
-    @if(post._3) {
-        @post._3.size comments, latest by @post._3(0).author
+    @if(post._1.comments) {
+        @post._1.comments.size comments, latest by @post._1.comments(0).author
     } else {
         no comments
     }
 }
+
+@comments = {
+    @if(post._1.comments) {
+    @post._1.comments.map { comment =>
+    <div class="comment">
+        <div class="comment-metadata">
+            <span class="comment-author">by @comment.author,</span>
+                        <span class="comment-date">
+                            @comment.postedAt.format("dd MMM yy")
+                        </span>
+        </div>
+        <div class="comment-content">
+            @Html(comment.content.replace("\n", "<br>"))
+        </div>
+    </div>
+    }
+    }
+}
+
+
 
 <div class="post @mode">
     <h2 class="post-title">
@@ -36,21 +56,7 @@
     <h3>
         @commentsTitle
     </h3>
-
-    @post._3.map { comment =>
-    <div class="comment">
-        <div class="comment-metadata">
-            <span class="comment-author">by @comment.author,</span>
-                    <span class="comment-date">
-                        @comment.postedAt.format("dd MMM yy")
-                    </span>
-        </div>
-        <div class="comment-content">
-            @Html(comment.content.replace("\n", "<br>"))
-        </div>
-    </div>
-    }
-
+        @comments
 </div>
 
 }
