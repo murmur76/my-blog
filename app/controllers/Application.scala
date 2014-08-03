@@ -18,30 +18,10 @@ import scala.util.Properties
 object Application extends Controller with MongoController {
   val userID = "celica212"
   val userName = "dongju"
-  val olderComment1 = Comment("who", "what is it", new Date, 2)
-  val olderComment2 = Comment("who", "what is it", new Date, 2)
-  val olderComments = Seq(olderComment1, olderComment2)
-  val olderPost = Post(2, "Second Post", "test", new Date, olderComments, "celica212")
-  val olderUser = User("celica212", "dongju")
 
-  val older = (olderPost, olderUser)
-
-  val frontComment1 = Comment("who", "what is it", new Date, 1)
-  val frontComment2 = Comment("who", "what is it", new Date, 1)
-  val frontComments = Seq(frontComment1, frontComment2)
-  val frontPost = Post(1, "First Post", "test", new Date, frontComments, "celica212")
-  val frontUser = User("celica212", "dongju")
-
-  val front: (Post, User) = (frontPost, frontUser)
-
-  val olders: Seq[(Post, User)] = Seq(older, older, older)
-  var allposts: Seq[(Post, User)] = front +: olders
   var count: Long = 3
-  var posts = getAllPosts
 
-  private def postCollection: JSONCollection = db.collection[JSONCollection]("posts")
-  private def commentCollection: JSONCollection = db.collection[JSONCollection]("comments")
-
+  private def collection: JSONCollection = db.collection[JSONCollection]("posts")
 
   def counter: Long = {
     count += 1
@@ -64,20 +44,6 @@ object Application extends Controller with MongoController {
     Ok(html.homepage_index("Homepage"))
   }
 
-  def getAllPosts = {
-    import play.api.libs.concurrent.Execution.Implicits._
-    implicit val Format = Json.format[Comment]
-    implicit val postFormat = Json.format[Post]
-
-    val cursor = postCollection.find(Json.obj()).cursor[Post]
-    val result = cursor.collect[Seq]()
-
-    val alls = result.map {
-      postOne => (User(userID, userName), postOne.head)
-    }
-    alls
-  }
-
   def blog = Action {
     val front: Option[(Post, User)] = allposts headOption
     val olders: Seq[(Post, User)] = allposts tail
@@ -91,25 +57,18 @@ object Application extends Controller with MongoController {
 
   def post = Action { implicit request =>
     import play.api.libs.concurrent.Execution.Implicits._
-    implicit val Format = Json.format[Comment]
+    implicit val commentFormat = Json.format[Comment]
     implicit val postFormat = Json.format[Post]
 
     val postData: Map[String, String] = postForm.bindFromRequest.data
     val frontPost = Post(counter, postData("title"), postData("content"), new Date, Seq(), "celica212")
 
-    postCollection.save(Json.toJson(frontPost))
+    collection.save(Json.toJson(frontPost))
 
-    val front = (frontPost, frontUser)
-    allposts = front +: allposts
     Redirect(routes.Application.blog)
   }
 
   def showPost(id: Long) = Action {
-    val post = allposts.find(post => post._1.id == id)
-    if(post.isDefined) {
-      Ok(html.show_post(post.get))
-    } else {
-      BadRequest("No Such Post")
-    }
+    BadRequest("No Such Post")
   }
 }
