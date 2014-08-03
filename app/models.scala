@@ -12,7 +12,7 @@ case class Post(
   title: String,
   content: String,
   postedAt: Date,
-  comments: Seq[Comment],
+  comments: List[Comment],
   author_id: String
 )
 
