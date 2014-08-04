@@ -3,7 +3,7 @@
 
 @commentsTitle = {
     @if(post._1.comments) {
-        @post._1.comments.size comments, latest by @post._1.comments(0).author
+        @post._1.comments.size comments, latest by @post._1.comments.reverse.head.author
     } else {
         no comments
     }
@@ -11,7 +11,7 @@
 
 @comments = {
     @if(post._1.comments) {
-        @post._1.comments.map { comment =>
+        @post._1.comments.reverse.map { comment =>
             <div class="comment">
                 <div class="comment-metadata"> <br>
                     <span class="comment-author">by @comment.author,</span>

@@ -9,6 +9,7 @@ import java.util.Date
 import models._
 import reactivemongo.bson.BSONObjectID
 import play.modules.reactivemongo.json.BSONFormats._
+import reactivemongo.core.commands.LastError
 import views._
 import reactivemongo.api._
 import play.modules.reactivemongo.MongoController
@@ -22,7 +23,7 @@ import scala.util.Properties
 object Application extends Controller with MongoController {
   private def collection: JSONCollection = db.collection[JSONCollection]("posts")
   import play.api.libs.concurrent.Execution.Implicits._
-  implicit val commentFormat = Json.format[Comment]
+  implicit val commentFormat: Format[Comment] = Json.format[Comment]
   implicit val postFormat = Json.format[Post]
 
   val userID = "celica212"
@@ -86,17 +87,12 @@ object Application extends Controller with MongoController {
   def comment(postedAt: Long) = Action.async { implicit request =>
     val commentData: Map[String, String] = commentForm.bindFromRequest.data
     val comment = Comment(commentData("author"), commentData("content"), new Date)
-    val futurePost = collection.find(Json.obj("postedAt" -> postedAt)).one[Post]
+    val selector = Json.obj("postedAt" -> postedAt)
+    val modifier = Json.obj("$push" -> Json.obj("comments" -> comment))
+    val futurePost: Future[LastError] = collection.update(selector, modifier)
 
-    futurePost.flatMap {
-      case Some(post) => {
-        post.comments = comment +: post.comments
-        val result = collection.save(Json.toJson(post))
-        result.map {
-          _ => Redirect(routes.Application.showPost(postedAt))
-        }
-      }
-      case None => Future.successful(BadRequest("No such post"))
+    futurePost.map{
+      _ => Redirect(routes.Application.showPost(postedAt))
     }
   }
 
