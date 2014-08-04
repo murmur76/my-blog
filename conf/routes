@@ -9,7 +9,7 @@ GET     /blog                       controllers.Application.blog
 POST    /post                       controllers.Application.post
 POST    /comment/:postedAt          controllers.Application.comment(postedAt: Long)
 GET     /write                      controllers.Application.writePost
-GET     /blog/:postedAt                controllers.Application.showPost(postedAt: Long)
+GET     /blog/:postedAt             controllers.Application.showPost(postedAt: Long)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

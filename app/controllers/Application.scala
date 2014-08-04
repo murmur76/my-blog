@@ -1,6 +1,5 @@
 package controllers
 
-import com.sun.corba.se.spi.ior.ObjectId
 import play.api._
 import play.api.mvc._
 import play.api.data._
@@ -21,13 +20,13 @@ import scala.util.Properties
 
 
 object Application extends Controller with MongoController {
-  val userID = "celica212"
-  val userName = "dongju"
-
   private def collection: JSONCollection = db.collection[JSONCollection]("posts")
   import play.api.libs.concurrent.Execution.Implicits._
   implicit val commentFormat = Json.format[Comment]
   implicit val postFormat = Json.format[Post]
+
+  val userID = "celica212"
+  val userName = "dongju"
 
   val postForm = Form(
     tuple(
@@ -97,6 +96,7 @@ object Application extends Controller with MongoController {
           _ => Redirect(routes.Application.showPost(postedAt))
         }
       }
+      case None => Future.successful(BadRequest("No such post"))
     }
   }
 
@@ -106,7 +106,7 @@ object Application extends Controller with MongoController {
       case Some(post) => {
         Ok(html.show_post((post, User(userID, userName))))
       }
-      case None => BadRequest("No Such Post")
+      case None => BadRequest("No such post")
     }
   }
 }

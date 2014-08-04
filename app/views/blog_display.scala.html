@@ -13,10 +13,10 @@
     @if(post._1.comments) {
         @post._1.comments.map { comment =>
             <div class="comment">
-                <div class="comment-metadata">
+                <div class="comment-metadata"> <br>
                     <span class="comment-author">by @comment.author,</span>
                         <span class="comment-date">
-                            @comment.postedAt.format("dd MMM yy")
+                            @comment.postedAt.format(" dd MMM yy ")
                         </span>
                 </div>
             <div class="comment-content">
@@ -38,30 +38,35 @@
         <span class="post-date">
             @post._1.postedAt.format("dd MMM yy")
         </span>
-
         @if(mode != "full") {
             <span class="post-comments">
                 @commentsTitle
             </span>
         }
+    </div><br>
+    @if(mode != "teaser" && mode != "home") {
+    <div class="post-content"> <br>
+        @Html(post._1.content.replace("\n", "<br><br>"))
     </div>
-    @if(mode != "teaser") {
-    <div class="post-content">
+    }
+    @if(mode == "home") {
+    <div class="post-content"> <br>
         @Html(post._1.content.replace("\n", "<br>"))
     </div>
     }
+
 </div>
 
 @if(mode == "full") {
-<form action="/comment/@post._1.postedAt.getTime()" method="POST"> <br>
-    Nickname <input type="text" name="author" size="10"> <br>
-    Comment <textarea name="content" rows="1" cols="10"></textarea> <br>
-    <input type="submit" value="comment"> <br>
 <div class="comments">
     <h3>
         @commentsTitle
     </h3>
         @comments
 </div>
+<form action="/comment/@post._1.postedAt.getTime()" method="POST"> <br>
+    Nickname <br><input type="text" name="author" size="10"> <br>
+    Comment <br><textarea name="content" rows="3" cols="50"></textarea> <br>
+    <input type="submit" value="comment"> <br>
 
 }
