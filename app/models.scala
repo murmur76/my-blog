@@ -2,23 +2,24 @@ package models
 
 import java.util.Date
 
+import reactivemongo.bson.BSONObjectID
+
 case class User(
   id: String,
   fullname: String
 )
 
 case class Post(
-  id: Long,
+  _id: Option[BSONObjectID],
   title: String,
   content: String,
   postedAt: Date,
-  comments: List[Comment],
+  var comments: List[Comment],
   author_id: String
 )
 
 case class Comment(
   author: String,
   content: String,
-  postedAt: Date,
-  post_id: Long
+  postedAt: Date
 )

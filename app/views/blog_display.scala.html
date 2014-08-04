@@ -1,4 +1,5 @@
-@(post:(models.Post,models.User), mode: String = "full")
+@(post:(models.Post,models.User), mode: String)
+
 
 @commentsTitle = {
     @if(post._1.comments) {
@@ -30,13 +31,14 @@
 
 <div class="post @mode">
     <h2 class="post-title">
-        <a href="/blog/@post._1.id">@post._1.title</a>
+        <a href="/blog/@post._1.postedAt.getTime()">@post._1.title</a>
     </h2>
     <div class="post-metadata">
         <span class="post-author">by @post._2.fullname</span>,
         <span class="post-date">
             @post._1.postedAt.format("dd MMM yy")
         </span>
+
         @if(mode != "full") {
             <span class="post-comments">
                 @commentsTitle
@@ -51,7 +53,10 @@
 </div>
 
 @if(mode == "full") {
-
+<form action="/comment/@post._1.postedAt.getTime()" method="POST"> <br>
+    Nickname <input type="text" name="author" size="10"> <br>
+    Comment <textarea name="content" rows="1" cols="10"></textarea> <br>
+    <input type="submit" value="comment"> <br>
 <div class="comments">
     <h3>
         @commentsTitle
