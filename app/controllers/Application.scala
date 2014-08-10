@@ -1,29 +1,24 @@
 package controllers
 
-import play.api._
-import play.api.mvc._
-import play.api.data._
-import play.api.data.Forms._
-import play.api.libs.json._
 import java.util.Date
+
 import models._
-import reactivemongo.bson.BSONObjectID
-import play.modules.reactivemongo.json.BSONFormats._
-import reactivemongo.core.commands.LastError
-import views._
-import reactivemongo.api._
+import play.api._
+import play.api.data.Forms._
+import play.api.data._
+import play.api.libs.json._
+import play.api.mvc._
 import play.modules.reactivemongo.MongoController
 import play.modules.reactivemongo.json.collection.JSONCollection
-import scala.concurrent.Future
+import reactivemongo.core.commands.LastError
+import views._
+import play.modules.reactivemongo.json.BSONFormats._
 import scala.concurrent._
-import scala.concurrent.duration._
-import scala.util.Properties
-
 
 object Application extends Controller with MongoController {
   private def collection: JSONCollection = db.collection[JSONCollection]("posts")
   import play.api.libs.concurrent.Execution.Implicits._
-  implicit val commentFormat: Format[Comment] = Json.format[Comment]
+  implicit val commentFormat = Json.format[Comment]
   implicit val postFormat = Json.format[Post]
 
   val userID = "celica212"
@@ -89,15 +84,23 @@ object Application extends Controller with MongoController {
     val comment = Comment(commentData("author"), commentData("content"), new Date)
     val selector = Json.obj("postedAt" -> postedAt)
     val modifier = Json.obj("$push" -> Json.obj("comments" -> comment))
-    val futurePost: Future[LastError] = collection.update(selector, modifier)
+    val futureResult: Future[LastError] = collection.update(selector, modifier)
 
-    futurePost.map{
-      _ => Redirect(routes.Application.showPost(postedAt))
+    futureResult.map {
+      lastError => {
+        if (lastError.updated != 0) {
+          Logger.info("Comment has been successfully updated")
+          Redirect(routes.Application.showPost(postedAt))
+        } else {
+          Logger.debug("Comment update failed with LastError: " + lastError.code)
+          BadRequest("Cannot find following post")
+        }
+      }
     }
   }
 
   def showPost(postedAt: Long) = Action.async {
-    val futureResult = collection.find(Json.obj("postedAt" -> postedAt)).one[Post]
+    val futureResult: Future[Option[Post]] = collection.find(Json.obj("postedAt" -> postedAt)).one[Post]
     futureResult.map {
       case Some(post) => {
         Ok(html.show_post((post, User(userID, userName))))

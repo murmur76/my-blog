@@ -21,5 +21,5 @@ case class Post(
 case class Comment(
   author: String,
   content: String,
-  postedAt: Date
+  commentedAt: Date
 )
